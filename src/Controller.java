@@ -1,5 +1,6 @@
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -36,8 +37,13 @@ public class Controller {
         Tab tab = new Tab();
         AnchorPane pane = new AnchorPane();
         WebView view = new WebView();
+        view.setPrefWidth(1000);
+        view.setPrefHeight(800);
+        view.setId("WebView");
+        pane.setId("Pane");
         pane.getChildren().add(view);
         tab.setContent(pane);
+
         tab.setText("New tab");
         tabPane.getTabs().add(tab);
         tabs.add(tab);
@@ -51,7 +57,17 @@ public class Controller {
 
     @FXML
     public void Search() {
-//        String url = searchRow.getText();
+        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        String url = searchRow.getText();
+        AnchorPane pane = (AnchorPane) selectedTab.getContent();
+        for (Node paneNode : pane.getChildren()) {
+            if (paneNode instanceof WebView) {
+                WebView view = (WebView) paneNode;
+                view.getEngine().load(url);
+
+            }
+        }
+
 //        webEngine.load(url);
 //        System.out.println(webEngine.getLoadWorker().stateProperty());
     }

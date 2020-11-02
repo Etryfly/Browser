@@ -48,7 +48,7 @@
                 </Menu>
               </menus>
             </MenuBar>
-            <Button fx:id="goButton" layoutX="824.0" layoutY="55.0" mnemonicParsing="false" text="Go" />
+            <Button fx:id="goButton" layoutX="824.0" layoutY="55.0" mnemonicParsing="false" onMouseClicked="#Search" text="Go" />
             <Button fx:id="addNewTabButton" layoutX="23.0" layoutY="83.0" mnemonicParsing="false" onMouseClicked="#addNewTab" text="Add new tab" />
          </children>
       </AnchorPane>
