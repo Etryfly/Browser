@@ -4,36 +4,22 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.web.WebView?>
 
 <VBox prefHeight="800.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0">
          <children>
-            <TabPane fx:id="tabPane" layoutY="121.0" prefHeight="675.0" prefWidth="999.0" tabClosingPolicy="ALL_TABS">
-              <tabs>
-                <Tab text="Untitled Tab 1">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="107.0" prefWidth="159.0">
-                           <children>
-                              <WebView fx:id="webView" prefHeight="644.0" prefWidth="1001.0" />
-                           </children>
-                        </AnchorPane>
-                  </content>
-                </Tab>
-              </tabs>
-            </TabPane>
+            <TabPane fx:id="tabPane" layoutY="121.0" prefHeight="675.0" prefWidth="999.0" tabClosingPolicy="ALL_TABS" />
             <TextField fx:id="searchRow" layoutX="42.0" layoutY="53.0" prefHeight="26.0" prefWidth="749.0" />
             <MenuBar layoutX="28.0" layoutY="-2.0">
               <menus>
-                <Menu mnemonicParsing="false" text="File">
+                <Menu mnemonicParsing="false" text="History">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="Close" />
+                    <MenuItem fx:id="HistoryMenu" mnemonicParsing="false" onAction="#HistoryOnAction" text="History" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
