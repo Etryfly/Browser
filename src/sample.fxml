@@ -36,6 +36,8 @@
             </MenuBar>
             <Button fx:id="goButton" layoutX="824.0" layoutY="55.0" mnemonicParsing="false" onMouseClicked="#Search" text="Go" />
             <Button fx:id="addNewTabButton" layoutX="23.0" layoutY="83.0" mnemonicParsing="false" onMouseClicked="#addNewTab" text="Add new tab" />
+            <Button fx:id="backButton" layoutX="253.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#backButtonOnClick" text="Back" />
+            <Button fx:id="forwardButton" layoutX="325.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#forwardButtonOnClick" text="Forward" />
          </children>
       </AnchorPane>
    </children>

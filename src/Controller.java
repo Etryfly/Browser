@@ -1,4 +1,5 @@
 import com.google.gson.Gson;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -6,9 +7,11 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -68,6 +71,24 @@ public class Controller {
 
     @FXML
     private TextField searchRow;
+
+    @FXML
+    private void backButtonOnClick() {
+        Tab tab = tabPane.getSelectionModel().getSelectedItem();
+        WebView view = getWebViewInTab(tab);
+        Platform.runLater(() -> {
+            view.getEngine().executeScript("history.back()");
+        });
+    }
+
+    @FXML
+    public void forwardButtonOnClick(MouseEvent mouseEvent) {
+        Tab tab = tabPane.getSelectionModel().getSelectedItem();
+        WebView view = getWebViewInTab(tab);
+        Platform.runLater(() -> {
+            view.getEngine().executeScript("history.forward()");
+        });
+    }
 
     @FXML
     private void addNewTab() {
@@ -197,13 +218,20 @@ public class Controller {
         closeHistory(selectedTab);
         openHistory(selectedTab, url);
 
-        AnchorPane pane = (AnchorPane) selectedTab.getContent();
+        WebView view = getWebViewInTab(selectedTab);
+        view.getEngine().load(url);
+    }
+
+    private WebView getWebViewInTab(Tab tab) {
+
+        AnchorPane pane = (AnchorPane) tab.getContent();
         for (Node paneNode : pane.getChildren()) {
             if (paneNode instanceof WebView) {
-                WebView view = (WebView) paneNode;
-                view.getEngine().load(url);
+                return (WebView) paneNode;
             }
         }
+
+        return null;
     }
 
     @FXML
