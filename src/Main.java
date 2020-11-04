@@ -8,10 +8,15 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
+        Parent root = loader.load();
+        Controller controller = loader.getController();
+        primaryStage.setOnHidden(e -> controller.onClose());
         primaryStage.setTitle("Browser");
         primaryStage.setScene(new Scene(root, 1000, 800));
+
         primaryStage.show();
+
     }
 
 
