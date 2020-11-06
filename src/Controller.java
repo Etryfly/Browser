@@ -1,9 +1,14 @@
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -21,9 +26,11 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -31,14 +38,7 @@ public class Controller {
     ArrayList<Tab> tabs = new ArrayList<>();
     HashMap<Tab, HistoryModel> historyHashMap = new HashMap<>();
     Gson gson = new Gson();
-    BufferedWriter bufferedWriter;
-    {
-        try {
-            bufferedWriter = new BufferedWriter(new FileWriter("history.json", true));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     private TableView<HistoryModel> tableView;
 
@@ -48,7 +48,8 @@ public class Controller {
     private final ObservableList<HistoryModel> historyData =
             FXCollections.observableArrayList();
 
-
+    private boolean isHistoryHiddenForAll;
+    private List<String> hiddenURLs = new ArrayList<>();
 
     private TableColumn<HistoryModel, Long> TimeCol;
 
@@ -75,19 +76,17 @@ public class Controller {
     @FXML
     private void backButtonOnClick() {
         Tab tab = tabPane.getSelectionModel().getSelectedItem();
+        if (tab == null) return;
         WebView view = getWebViewInTab(tab);
-        Platform.runLater(() -> {
-            view.getEngine().executeScript("history.back()");
-        });
+        Platform.runLater(() -> view.getEngine().executeScript("history.back()"));
     }
 
     @FXML
     public void forwardButtonOnClick(MouseEvent mouseEvent) {
         Tab tab = tabPane.getSelectionModel().getSelectedItem();
+        if (tab == null) return;
         WebView view = getWebViewInTab(tab);
-        Platform.runLater(() -> {
-            view.getEngine().executeScript("history.forward()");
-        });
+        Platform.runLater(() -> view.getEngine().executeScript("history.forward()"));
     }
 
     @FXML
@@ -113,13 +112,14 @@ public class Controller {
 
 
     private void openHistory(Tab tab, String url) {
+        if (!isHistoryHiddenForAll && !hiddenURLs.contains(url)) {
+            HistoryModel historyModel = new HistoryModel();
+            historyModel.setUrl(url);
+            Date currDate = new Date(System.currentTimeMillis());
 
-        HistoryModel historyModel = new HistoryModel();
-        historyModel.setUrl(url);
-        Date currDate = new Date(System.currentTimeMillis());
-
-        historyModel.setDate(currDate);
-        historyHashMap.put(tab, historyModel);
+            historyModel.setDate(currDate);
+            historyHashMap.put(tab, historyModel);
+        }
     }
 
     @FXML
@@ -180,14 +180,10 @@ public class Controller {
     private void closeHistory(Tab tab) {
 
         HistoryModel model = historyHashMap.get(tab);
-        model.setTimeSpend( System.currentTimeMillis() - model.getDate().getTime());
+        if (model != null) {
+            model.setTimeSpend(System.currentTimeMillis() - model.getDate().getTime());
 
-        historyData.add(model);
-        try {
-            bufferedWriter.write(gson.toJson(model));
-            bufferedWriter.write(",\n");
-        } catch (IOException e) {
-            e.printStackTrace();
+            historyData.add(model);
         }
 
     }
@@ -198,15 +194,23 @@ public class Controller {
     }
 
     public void onClose() {
-        //call history close
-        try {
-            for (var entry : historyHashMap.entrySet()) {
-                closeHistory(entry.getKey());
+        if (historyData.size() > 0) {
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("history.json"))) {
+                for (var entry : historyHashMap.entrySet()) {
+                    closeHistory(entry.getKey());
+                }
+                bufferedWriter.write("[");
+                for (int i = 0; i < historyData.size() - 1; i++) {
+                    HistoryModel model = historyData.get(i);
+                    bufferedWriter.write(gson.toJson(model));
+                    bufferedWriter.write(",\n");
+                }
+                bufferedWriter.write(gson.toJson(historyData.get(historyData.size() - 1)) + "]");
+                bufferedWriter.flush();
+                bufferedWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            bufferedWriter.flush();
-            bufferedWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -234,15 +238,36 @@ public class Controller {
         return null;
     }
 
+    private boolean isHistoryLoaded = false;
+
     @FXML
     public void HistoryOnAction() {
-            tableView = new TableView<HistoryModel>();
-            URLCol = new TableColumn<HistoryModel, String>("URL");
-            DateCol = new TableColumn<HistoryModel, Date>("Date");
-            TimeCol = new TableColumn<HistoryModel, Long>("Time spend");
-            URLCol.setCellValueFactory(new PropertyValueFactory<HistoryModel, String>("url"));
-            DateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-            TimeCol.setCellValueFactory(new PropertyValueFactory<>("timeSpend"));
+
+            if (!isHistoryLoaded) {
+                try (JsonReader reader = new JsonReader(new FileReader("history.json"))) {
+                    Type REVIEW_TYPE = new TypeToken<List<HistoryModel>>() {
+                    }.getType();
+                    Gson gson = new Gson();
+                    List<HistoryModel> modelsList = gson.fromJson(reader, REVIEW_TYPE);
+                    if (modelsList != null) {
+                        historyData.addAll(modelsList);
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                isHistoryLoaded = true;
+            }
+
+        tableView = new TableView<HistoryModel>();
+        URLCol = new TableColumn<HistoryModel, String>("URL");
+        DateCol = new TableColumn<HistoryModel, Date>("Date");
+        TimeCol = new TableColumn<HistoryModel, Long>("Time spend");
+        URLCol.setCellValueFactory(new PropertyValueFactory<HistoryModel, String>("url"));
+        DateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        TimeCol.setCellValueFactory(new PropertyValueFactory<>("timeSpend"));
+
             tableView.setItems(historyData);
             StackPane pane = new StackPane();
             tableView.getColumns().addAll(URLCol, DateCol, TimeCol);
@@ -253,5 +278,20 @@ public class Controller {
             stage.showAndWait();
     }
 
+    public void HideSettingsOnClick(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("HistoryHide.fxml"));
+            Parent root = loader.load();
 
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            HideHistory controller = loader.getController();
+            isHistoryHiddenForAll = controller.isAllSitesHidden();
+            hiddenURLs = controller.getHiddenUrls();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }
