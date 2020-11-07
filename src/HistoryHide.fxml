@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HideHistory">
+  <children>
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+         <children>
+            <CheckBox fx:id="HideForAllCheckBox" layoutX="99.0" layoutY="38.0" mnemonicParsing="false" text="Hide history for all" />
+            <TextArea fx:id="TextBox" layoutX="99.0" layoutY="106.0" prefHeight="200.0" prefWidth="200.0" />
+            <Label layoutX="99.0" layoutY="84.0" text="Ignored sites, separate by newline" />
+            <Button fx:id="okButton" layoutX="459.0" layoutY="316.0" mnemonicParsing="false" onMouseClicked="#OkButtonOnClick" text="Ok" />
+         </children>
+    </AnchorPane>
+  </children>
+</VBox>
